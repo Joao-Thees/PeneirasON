@@ -1,0 +1,43 @@
+PENEIRAS ON - CTWP (Sprint 3)
+Registro de prompts de IA usados no desenvolvimento do CLI em Python.
+Ferramenta: Claude (Claude Code)
+
+====================================================================
+# PARA O DESENVOLVIMENTO DA LÓGICA DO HEADER DA NOSSA PÁGINA:
+
+01. Claude, varra o projeto e liste de onde paramos na disciplina de
+    CTWP (Python) e o que ainda falta para a entrega.
+
+02. Vamos dar continuidade à função "inscricao" (o cadastro do atleta).
+
+03. Quero guardar os estados brasileiros para validar a UF digitada.
+    Qual a melhor estrutura para isso: conjunto, dicionário ou lista?
+    Seja direto e explique o porquê.
+
+04. No nosso site pede estado mais cidade. Nesse caso o ideal passa a
+    ser dicionário?
+
+05. No passo 4 do cadastro existe um campo de anexo de imagem e de
+    links. Como eu posso representar isso no terminal?
+
+
+06. Varra a função "inscricao" inteira e aponte os erros: campos que
+    faltam, inserção correta em conjuntos, dicionários e listas, e
+    qualquer bug de lógica. Corrija os erros que você apontou, com foco em guardar os dados
+    do atleta na lista de dicionários. Mantenha o "return login()" por
+    enquanto, pois vou ajustar a biblioteca msvcrt depois.
+
+07. A partir do debug, reescreva direto no arquivo, mas mantenha os
+    comentários feitos por mim. O resto pode reescrever o que estava
+    errado.
+
+08.  Claude, no feed acho que vai complicar um pouco. veja o doc que documenta o site  na aba feed, 
+    ou acesse:
+    https://peneirason.vercel.app/feed.html
+  . Veja que existem varios jogadores. 
+  ACredito que seria possivel/melhor ter todos eles em um dicionario, com chave por nome e valor 
+  pelos dados dele para usar no posicoes_feed que eu criei na funcao feed (analise isso) 
+  O que voce acha? qual seria a melhor forma de representar isso no terminal? 
+  sem contar tambem a escolha de seleiconar novamente as posicoes para exibir os 
+  jogadore da posicao selecionadad, entao vai ter condicionais, etc, estado e o 
+  limpa filros que criarei uma funcao separada para isso. seja direto, sem muito texto
