@@ -3,6 +3,41 @@ Registro de prompts de IA usados no desenvolvimento do CLI em Python.
 Ferramenta: Claude (Claude Code)
 
 ====================================================================
+CONTEXTO GERAL DO USO DE IA
+====================================================================
+
+A IA foi usada como ferramenta de apoio a decisao tecnica, e nao como
+"gerador de codigo pronto". O objetivo foi validar escolhas de estrutura
+de dados e de arquitetura antes de escrever, entendendo o PORQUE de cada
+uma. Os principais eixos em que a IA foi consultada:
+
+- Escolha da estrutura de dados por caso de uso:
+  * conjunto (set) para ESTADOS, POSICOES e PE_DOMINANTE, por causa da
+    verificacao de pertencimento (ex.: `uf in ESTADOS`) e da unicidade,
+    sem precisar de ordem nem de valor associado;
+  * lista de dicionarios para `atletas` e `peneiras`, quando cada item e
+    um registro com varios campos nomeados;
+  * dicionario de dicionarios para `perfis_posicao` (7 posicoes x 8
+    atributos), quando o acesso e por chave (a posicao) e o valor e outro
+    conjunto chave->valor;
+  * matriz (lista de listas) para `presencas` e `avaliacoes`, quando o
+    dado e tabular (linha = atleta, colunas = situacao/notas).
+
+- Modelagem do cadastro como lista de dicionarios, garantindo que todas
+  as telas (feed, olheiro, gestora) leiam o MESMO formato de atleta.
+
+- Validacao de entrada em laco: cada campo repete a propria pergunta ate
+  vir um valor valido, em vez de reiniciar o fluxo.
+
+- Sincronia com o MVP visual: os fluxos, campos e regras do terminal
+  espelham o site (inscricao, feed, painel do olheiro e painel da gestora).
+
+- Organizacao em modulos (main, dados, jogador, olheiro, gestora) para
+  desacoplar dados/estilo da logica de cada perfil.
+
+====================================================================
+EXEMPLOS REAIS DE PROMPTS CAPTADOS E USADOS:
+====================================================================
 # PARA O DESENVOLVIMENTO DA LÓGICA DO HEADER DA NOSSA PÁGINA:
 
 01. Claude, varra o projeto e liste de onde paramos na disciplina de
@@ -31,13 +66,19 @@ Ferramenta: Claude (Claude Code)
     comentários feitos por mim. O resto pode reescrever o que estava
     errado.
 
-08.  Claude, no feed acho que vai complicar um pouco. veja o doc que documenta o site  na aba feed, 
+08.  Claude, no feed acho que vai complicar um pouco. veja o doc que documenta o site  na aba feed,
     ou acesse:
     https://peneirason.vercel.app/feed.html
-  . Veja que existem varios jogadores. 
-  ACredito que seria possivel/melhor ter todos eles em um dicionario, com chave por nome e valor 
-  pelos dados dele para usar no posicoes_feed que eu criei na funcao feed (analise isso) 
-  O que voce acha? qual seria a melhor forma de representar isso no terminal? 
-  sem contar tambem a escolha de seleiconar novamente as posicoes para exibir os 
-  jogadore da posicao selecionadad, entao vai ter condicionais, etc, estado e o 
+  . Veja que existem varios jogadores.
+  ACredito que seria possivel/melhor ter todos eles em um dicionario, com chave por nome e valor
+  pelos dados dele para usar no posicoes_feed que eu criei na funcao feed (analise isso)
+  O que voce acha? qual seria a melhor forma de representar isso no terminal?
+  sem contar tambem a escolha de seleiconar novamente as posicoes para exibir os
+  jogadore da posicao selecionadad, entao vai ter condicionais, etc, estado e o
   limpa filros que criarei uma funcao separada para isso. seja direto, sem muito texto
+
+09. Organizacao: crie modulos no arquivo local para a gestora/academia e jogador
+    (o olheiro tambem). Tudo no main.py fica muito codigo condensado em um so
+    arquivo. Traga as devidas funcoes para os devidos novos modulos e importe
+    corretamente em cada arquivo, de forma que o main funcione integrando tudo
+    em um so principal.

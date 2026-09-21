@@ -1,0 +1,4 @@
+# cache do Python (nao versionar)
+__pycache__/
+*.pyc
+.env*
