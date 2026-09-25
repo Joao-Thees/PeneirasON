@@ -1,12 +1,11 @@
-"""Area do jogador (atleta): inscricao, feed, tela de status e score de completude."""
+"""Area do jogador (atleta): inscricao, feed, status, peneiras, perfil e score de completude."""
 
-import random
 import time
 from datetime import datetime, date
 import textos
 import dados
 from dados import moldura, console, POSICOES, ESTADOS, IDADE_MIN, IDADE_MAX, PE_DOMINANTE
-from olheiro import match_posicao  # reaproveita o calculo de % de match por posicao
+from olheiro import match_posicao, esta_convocado  # reaproveita as regras do olheiro
 from rich.progress import Progress, BarColumn, TextColumn
 from rich.panel import Panel
 
@@ -16,9 +15,10 @@ def calcular_score(atleta):
     atleta (dict): dados do atleta.
     retorno (int): soma dos pesos dos campos preenchidos.
     """
+    # video vale 25 pontos, como o FAQ do MVP promete
     pesos = {'nome': 8, 'nascimento': 8, 'cpf': 10, 'posicao': 10,
              'pe': 4, 'altura': 4, 'peso': 4, 'clube': 6,
-             'anos_pratica': 4, 'video': 18, 'foto': 8}
+             'anos_pratica': 4, 'video': 25, 'foto': 8}
     total = 0
     for campo, ponto in pesos.items():
         if atleta.get(campo):
@@ -49,34 +49,129 @@ def mostrar_score_rich(score):
             time.sleep(0.01)
     console.print(Panel(f'Seu score: [bold {cor}]{score}%[/] - perfil {faixa}', border_style=cor))
 
-def tela_status(nome='ATLETA'):
-    """Dashboard pos-login do jogador (tela status do MVP), com dados sorteados.
+def alocar_peneira(atleta):
+    """Algoritmo de alocacao: escolhe a peneira mais proxima com vaga para o atleta.
 
-    nome (str): nome exibido no topo.
-    retorno (None): so imprime a convocacao.
+    Regras (o MVP promete a alocacao mas nao implementa - definidas aqui):
+    1. so entram peneiras que ainda recebem atletas (status diferente de 'encerrada')
+       e cuja faixa etaria (ex: '13-17') inclui a idade do atleta;
+    2. "mais proxima" = peneira na mesma UF do atleta;
+    3. sem peneira na UF, vai para a de menor ocupacao (inscritos/capacidade),
+       priorizando a regiao menos atendida em vez da mais lotada.
+
+    atleta (dict): dados do atleta (usa 'idade' e 'uf').
+    retorno (dict ou None): a peneira escolhida, ou None se nenhuma servir.
     """
-    peneira = random.choice(dados.peneiras)
-    score = random.randint(70, 99)
-    ranking = random.randint(1, peneira['inscritos'])
-    vaga = random.randint(1, peneira['capacidade'])
-    bloco = (
-        f'OLA, {nome.upper()}                         [CONVOCADO]\n'
-        f'VOCE FOI CONVOCADO.\n\n'
-        f'SUA PROXIMA PENEIRA: {peneira["cidade"].upper()} - {peneira["uf"]}\n'
-        f'DATA: {peneira["data"]}\n'
-        f'SUA VAGA: #{vaga:03d}/{peneira["capacidade"]}\n'
-        f'SEU SCORE: {score}%   RANKING: #{ranking} entre {peneira["inscritos"]}\n\n'
-        f'LINHA DO TEMPO\n'
-        f'  [x] Inscricao realizada\n'
-        f'  [x] Score consolidado em {score}%\n'
-        f'  [x] Convocacao confirmada via SMS\n'
-        f'  [ ] Peneira presencial - {peneira["cidade"]}\n'
-        f'  [ ] Avaliacao do olheiro\n'
-        f'  [ ] Resposta final\n\n'
-        f'LEMBRETE: chegue com 30 min de antecedencia, leve documento\n'
-        f'com foto e a confirmacao por SMS.'
-    )
-    moldura(bloco, 'STATUS DO ATLETA')
+    candidatas = []
+    for p in dados.peneiras:
+        idade_min, idade_max = (int(x) for x in p['faixa'].split('-'))
+        if p['status'] != 'encerrada' and idade_min <= atleta['idade'] <= idade_max:
+            candidatas.append(p)
+    if not candidatas:
+        return None
+    for p in candidatas:
+        if p['uf'] == atleta['uf']:
+            return p
+    return min(candidatas, key=lambda p: p['inscritos'] / p['capacidade'])
+
+def ranking_atleta(atleta):
+    """Posicao do atleta no ranking geral por score (1 = maior score).
+
+    atleta (dict): dados do atleta.
+    retorno (int): posicao no ranking.
+    """
+    return 1 + sum(1 for a in dados.atletas if a['score'] > atleta['score'])
+
+def buscar_por_cpf(cpf):
+    """Procura o atleta inscrito pelo CPF.
+
+    cpf (str): CPF com 11 digitos.
+    retorno (int ou None): indice do atleta em dados.atletas, ou None se nao achar.
+    """
+    for i, a in enumerate(dados.atletas):
+        if a['cpf'] == cpf:
+            return i
+    return None
+
+def tela_status(cpf):
+    """Dashboard pos-login do jogador (tela status do MVP), com os dados reais dele.
+
+    cpf (str): CPF digitado no login, usado para achar o atleta.
+    retorno (None): so imprime o status.
+    """
+    indice = buscar_por_cpf(cpf)
+    if indice is None:
+        print('CPF nao encontrado. Faca sua inscricao pela rota "inscricao".')
+        return
+    a = dados.atletas[indice]
+    convocado = esta_convocado(a)
+
+    # a linha do tempo le as mesmas estruturas que o olheiro preenche
+    presente = any(p[0] == indice and p[1] == 1 for p in dados.presencas)
+    avaliado = any(av[0] == indice for av in dados.avaliacoes)
+    decisao = next((d['decisao'] for d in dados.decisoes if d['indice'] == indice), None)
+
+    codigo = a.get('peneira')  # atleta novo ja sai da inscricao com a peneira alocada
+    peneira = next((p for p in dados.peneiras if p['codigo'] == codigo), None) or alocar_peneira(a)
+
+    linhas = [f'OLA, {a["nome"].upper()}    [{"CONVOCADO" if convocado else "INSCRITO"}]',
+              'VOCE FOI CONVOCADO.' if convocado else 'INSCRICAO CONFIRMADA. AGUARDANDO CONVOCACAO.',
+              '']
+    if peneira:
+        linhas.append(f'SUA PROXIMA PENEIRA: {peneira["cidade"].upper()} - {peneira["uf"]} ({peneira["codigo"]})')
+        linhas.append(f'DATA: {peneira["data"]} | FAIXA: {peneira["faixa"]} anos')
+    else:
+        linhas.append('SUA PROXIMA PENEIRA: nenhuma aberta para sua idade/regiao ainda.')
+        linhas.append('Sua inscricao conta como demanda para abrir peneiras na sua regiao.')
+    linhas.append(f'SEU SCORE: {a["score"]}%   RANKING: #{ranking_atleta(a)} entre {len(dados.atletas)}')
+    linhas.append('')
+    linhas.append('LINHA DO TEMPO')
+    linhas.append('  [x] Inscricao realizada')
+    linhas.append(f'  [x] Score consolidado em {a["score"]}%')
+    linhas.append(f'  [{"x" if convocado else " "}] Convocacao confirmada via SMS')
+    linhas.append(f'  [{"x" if presente else " "}] Peneira presencial')
+    linhas.append(f'  [{"x" if avaliado else " "}] Avaliacao do olheiro')
+    linhas.append(f'  [{"x" if decisao else " "}] Resposta final{": " + decisao if decisao else ""}')
+    if convocado:
+        linhas.append('')
+        linhas.append('LEMBRETE: chegue com 30 min de antecedencia, leve documento')
+        linhas.append('com foto e a confirmacao por SMS.')
+    moldura('\n'.join(linhas), 'STATUS DO ATLETA')
+
+def peneiras():
+    """Calendario da temporada (tela peneiras do MVP) com os filtros do site.
+
+    retorno (None): so imprime as peneiras filtradas.
+    """
+    print('Filtro: [T]odas  [A]bertas  [I]nscricoes  [E]ncerradas  [R] Minha regiao')
+    while True:
+        filtro = input('filtro> ').strip().upper()
+        if filtro in ('T', 'A', 'I', 'E', 'R'):
+            break
+        print('Digite T, A, I, E ou R.')
+
+    uf = ''
+    if filtro == 'R':
+        while True:
+            uf = input('Sua UF (ex: RJ): ').strip().upper()
+            if uf in ESTADOS:
+                break
+            print('Informe uma UF valida (ex: RJ).')
+
+    status_filtro = {'A': 'aberta', 'I': 'inscricoes', 'E': 'encerrada'}
+    linhas = []
+    for p in dados.peneiras:
+        if filtro in status_filtro and p['status'] != status_filtro[filtro]:
+            continue
+        if filtro == 'R' and p['uf'] != uf:
+            continue
+        linhas.append(f'[{p["status"].upper():<10}] {p["codigo"]} {p["cidade"]}/{p["uf"]:<3} '
+                      f'{p["data"]} | faixa {p["faixa"]} | {p["inscritos"]} insc / {p["capacidade"]} vagas')
+
+    if not linhas:
+        print('Nenhuma peneira com esse filtro.')
+        return
+    moldura('\n'.join(linhas), f'CALENDARIO DE PENEIRAS - {len(linhas)} peneira(s)')
 
 def inscricao():
     """Wizard de inscricao do atleta em 5 passos (identificacao a responsavel).
@@ -84,7 +179,11 @@ def inscricao():
     retorno (None): salva o atleta em dados.atletas e mostra o score.
     """
     print('QUEM E VOCE?')
-    nome_completo = input('Seu Nome Completo: ')
+    while True:
+        nome_completo = input('Seu Nome Completo: ').strip()
+        if nome_completo:
+            break
+        print('Informe seu nome completo.')
 
     while True:
         try:
@@ -222,12 +321,23 @@ def inscricao():
         'score': 0,       # score de completude: calculado abaixo
     }
     atleta['score'] = calcular_score(atleta)
-    dados.atletas.append(atleta)
 
     input('APERTE ENTER PARA CONFIRMAR A INSCRICAO! ')
+
+    peneira = alocar_peneira(atleta)
+    atleta['peneira'] = peneira['codigo'] if peneira else ''
+    dados.atletas.append(atleta)
+    dados.presencas.append([len(dados.atletas) - 1, 0])  # entra na lista de check-in do olheiro
+
+    if peneira:
+        peneira['inscritos'] += 1
+        alocacao = (f'Voce foi alocado na peneira {peneira["codigo"]} - '
+                    f'{peneira["cidade"]}/{peneira["uf"]} em {peneira["data"]}.')
+    else:
+        alocacao = ('Ainda nao ha peneira aberta para sua idade/regiao.\n'
+                    'Sua inscricao conta como demanda para abrir uma perto de voce.')
     moldura('Inscricao enviada. Perfil criado. Voce esta no jogo.\n'
-            'Voce recebe SMS com a confirmacao e sera alocado na peneira\n'
-            'mais proxima com vaga.', 'INSCRICAO')
+            'Voce recebe SMS com a confirmacao.\n' + alocacao, 'INSCRICAO')
     mostrar_score_rich(atleta['score'])  # barra de completude com a Rich
 
 def feed():

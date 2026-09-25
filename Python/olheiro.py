@@ -11,6 +11,14 @@ def media_avaliacao(linha):
     """
     return sum(linha[1:5]) / 4
 
+def esta_convocado(atleta):
+    """Regra de convocacao (o MVP mostra pronto mas nao explica): score >= 85.
+
+    atleta (dict): dados do atleta.
+    retorno (bool): True se o atleta esta convocado.
+    """
+    return atleta['score'] >= 85
+
 def match_posicao(atributos, perfil):
     """Similaridade de cosseno (%) entre os atributos do atleta e um perfil-base.
 
@@ -38,7 +46,7 @@ def kpis_lista():
     # regras que o MVP mostra pronto mas nao explica (implementadas aqui):
     # elegivel = idade na faixa 7-19 e score >= 60; convocado = score >= 85
     elegiveis = sum(1 for a in dados.atletas if IDADE_MIN <= a['idade'] <= IDADE_MAX and a['score'] >= 60)
-    convocados = sum(1 for a in dados.atletas if a['score'] >= 85)
+    convocados = sum(1 for a in dados.atletas if esta_convocado(a))
     score_medio = round(sum(a['score'] for a in dados.atletas) / total)
     com_video = round(sum(1 for a in dados.atletas if a['video']) / total * 100)
     pct_eleg = round(elegiveis / total * 100, 1)
@@ -135,7 +143,7 @@ def tela_lista():
     for i in selec:
         a = dados.atletas[i]
         estrela = '*' if i in dados.favoritos else ' '
-        status = 'CONVOCADO' if a['score'] >= 85 else 'INSCRITO'
+        status = 'CONVOCADO' if esta_convocado(a) else 'INSCRITO'
         video = '1' if a['video'] else '-'
         origem = f'{a["cidade"]}/{a["uf"]}'
         linhas.append(f'{estrela}{i:>3}  {a["nome"]:<20} {a["posicao"]:<10} {a["idade"]:>4}  '
@@ -230,7 +238,8 @@ def tela_avaliacao():
                 print('A nota tem que ser de 0 a 10.')
             except ValueError:
                 print('Digite um numero inteiro de 0 a 10.')
-    media = sum(notas) / 4
+    linha = [idx] + notas  # mesma linha que vai para a matriz avaliacoes
+    media = media_avaliacao(linha)
 
     obs = input('OBSERVACOES: ').strip()
 
@@ -242,7 +251,6 @@ def tela_avaliacao():
     decisao = {'A': 'APROVADO', 'O': 'OBSERVAR', 'D': 'DESCARTADO'}[d]
 
     # salva as notas na matriz avaliacoes (atualiza se ja existir; senao acrescenta)
-    linha = [idx] + notas
     for k, av in enumerate(dados.avaliacoes):
         if av[0] == idx:
             dados.avaliacoes[k] = linha

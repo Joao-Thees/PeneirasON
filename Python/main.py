@@ -20,9 +20,9 @@ def header():
     """
     validas = ('como funciona', 'sobre', 'faq', 'politica de privacidade',
                'entrar', 'inscricao', 'quero me inscrever', 'perfil',
-               'olheiro', 'academia', 'gestora', 'feed')
+               'olheiro', 'academia', 'gestora', 'feed', 'peneiras')
     moldura('COMO FUNCIONA - SOBRE - FAQ - POLITICA DE PRIVACIDADE\n'
-            'ENTRAR - FEED - PERFIL - OLHEIRO - GESTORA - QUERO ME INSCREVER', 'PENEIRAS ON')
+            'ENTRAR - FEED - PENEIRAS - PERFIL - OLHEIRO - GESTORA - QUERO ME INSCREVER', 'PENEIRAS ON')
     while True:
         rota = input('rota> ').strip().lower()
         if rota == 'sair':
@@ -121,7 +121,7 @@ def login():
         dados.login_jogador[0]['email'] = pedir_email('E-MAIL: ')
         dados.login_jogador[1]['cpf'] = pedir_cpf()
         dados.login_jogador[2]['senha'] = pedir_senha()
-        jogador.tela_status()
+        jogador.tela_status(dados.login_jogador[1]['cpf'])
 
     elif tecla_login == 'O':
         dados.login_olheiro[0]['email'] = pedir_email('EMAIL CORPORATIVO: ')
@@ -145,7 +145,8 @@ rotas_header = {"como funciona": como_funciona,
                 "olheiro": olheiro.painel_olheiro,
                 "academia": gestora.painel_gestora,
                 "gestora": gestora.painel_gestora,
-                "feed": jogador.feed}
+                "feed": jogador.feed,
+                "peneiras": jogador.peneiras}
 
 def principal():
     """Laco principal: mostra o menu, le a rota e despacha ate o usuario sair.

@@ -5,8 +5,6 @@ SOBRE = '''Quem somos
             Quem está
             por trás
             do projeto.
-
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Mauris sit amet velit non lectus dignissim suscipit.
             Fundado em
             2026
             FIAP · 1º Ano
@@ -23,28 +21,18 @@ SOBRE = '''Quem somos
             Missão.
             Visão.
             Valores.
-
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent in sapien sed leo vestibulum convallis. Integer non lectus eu lorem fringilla volutpat.
             01
             Missão
             Democratizar o futebol.
-
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore.
             02
             Visão
             O olheiro vai até você.
-
-            Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
             03
             Valores
             Acesso, dado, respeito.
-
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore.
             Histórico
             Do briefing
             ao campo.
-
-            Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore. Vestibulum ante ipsum primis in faucibus orci luctus.
             FEV · 2026
             Kickoff com a Pelé Academia
 
@@ -52,7 +40,7 @@ SOBRE = '''Quem somos
             MAR · 2026
             Pesquisa de campo
 
-            Entrevistas com olheiros, gestores e potenciais inscritos em três regiões: RJ, PE e AM. Lorem ipsum dolor sit amet.
+            Entrevistas com olheiros, gestores e potenciais inscritos em três regiões: RJ, PE e AM.
             ABR · 2026
             Design system + protótipo
 
@@ -89,15 +77,13 @@ SOBRE = '''Quem somos
             Clara Diel Gama Secco
             Design + DPORM 571679
             foto
-            Anna
-            ProdutoRM —
+            Anna Júlia Elias Andrade
+            ProdutoRM 573453
             Parceria
             Em parceria com a
             Pelé Academia.
 
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fundada em 2018 para honrar o legado do Rei Pelé, a Pelé Academia oferece a crianças e jovens brasileiros acesso à educação, lazer e cidadania através do futebol.
-
-            Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+            Fundada em 2018 para honrar o legado do Rei Pelé, a Pelé Academia oferece a crianças e jovens brasileiros acesso à educação, lazer e cidadania através do futebol.
             Em números
             Anos de operação8
             Atletas atendidos12k+
@@ -106,8 +92,6 @@ SOBRE = '''Quem somos
             Contato
             Fala
             com a gente.
-
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
             E-mail geral contato@exemplo.com
             Imprensa imprensa@exemplo.com
             Parcerias parcerias@exemplo.com
